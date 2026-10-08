@@ -1,0 +1,9 @@
+{
+  "name": "TradingAgents - Multi-Agent LLM Trading Framework",
+  "description": "Multi-agent LLM financial trading framework mirroring quantitative trading firms with specialized Analyst, Researcher, Trader, Risk Management, and Portfolio Manager agents.",
+  "prompt": "TradingAgents: Multi-Agents LLM Financial Trading Framework",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ],
+  "permissions": []
+}
