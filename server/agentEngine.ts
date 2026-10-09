@@ -357,11 +357,29 @@ export function getMarketData(symbol: string): MarketData {
 let geminiClient: GoogleGenAI | null = null;
 function getGeminiClient(): GoogleGenAI | null {
   const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-  if (!key) return null;
+  // Valid Gemini developer API keys begin with AIza and are ~39 characters long
+  if (!key || typeof key !== 'string' || !key.startsWith('AIza') || key.length < 25) {
+    return null;
+  }
   if (!geminiClient) {
-    geminiClient = new GoogleGenAI({ apiKey: key });
+    try {
+      geminiClient = new GoogleGenAI({ apiKey: key });
+    } catch (err) {
+      console.warn('Failed to initialize GoogleGenAI client:', err);
+      return null;
+    }
   }
   return geminiClient;
+}
+
+function generateDeterministicThesis(market: MarketData, rating: string): string {
+  if (rating === 'Buy' || rating === 'Overweight') {
+    return `The Tauric Research committee approves an ${rating} allocation in ${market.name} (${market.symbol}). Sustained structural momentum above key moving averages alongside resilient balance sheet fundamentals provides a high-conviction risk-adjusted setup targeting the $${market.resistanceLevel} resistance zone.`;
+  } else if (rating === 'Sell' || rating === 'Underweight') {
+    return `The Tauric Research committee designates a defensive ${rating} stance on ${market.name} (${market.symbol}). Momentum fatigue and macroeconomic headwinds suggest capital preservation with strict stop-loss adherence anchored at $${market.supportLevel}.`;
+  } else {
+    return `The Tauric Research committee maintains a neutral ${rating} posture on ${market.name} (${market.symbol}). Equilibrium between underlying cash-flow yields and short-term multiple compression suggests awaiting higher-conviction catalyst confirmations before scaling portfolio beta.`;
+  }
 }
 
 export async function runMultiAgentAnalysis(
@@ -384,13 +402,19 @@ Price: $${market.price}, 24h Change: ${market.change24hPercent}%, RSI: ${market.
 Generate a crisp 2-sentence institutional investment thesis balancing risk, technical setup, and fundamental valuation.`;
 
       const res = await client.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.8-flash',
         contents: prompt,
       });
       aiSummary = res.text?.trim() || '';
-    } catch (e) {
-      console.warn('Gemini query fallback:', e);
+    } catch (e: any) {
+      console.warn('Gemini query fallback active (using institutional synthesis):', e?.message || e);
     }
+  }
+
+  const rating = market.change24hPercent > 2.0 ? 'Buy' : market.change24hPercent > -0.5 ? 'Overweight' : 'Hold';
+
+  if (!aiSummary) {
+    aiSummary = generateDeterministicThesis(market, rating);
   }
 
   // 1. Analyst Reports
@@ -547,7 +571,6 @@ Generate a crisp 2-sentence institutional investment thesis balancing risk, tech
   ];
 
   // 5. Portfolio Manager Verdict
-  const rating = market.change24hPercent > 2.0 ? 'Buy' : market.change24hPercent > -0.5 ? 'Overweight' : 'Hold';
   const portfolioVerdict: PortfolioManagerVerdict = {
     rating,
     approved: true,

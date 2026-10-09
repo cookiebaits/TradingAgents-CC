@@ -143,7 +143,8 @@ function recalculatePortfolio() {
 // -------------------------------------------------------------
 
 app.get('/api/health', (req, res) => {
-  const hasKey = !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+  const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  const hasKey = !!(key && key.startsWith('AIza'));
   res.json({
     status: 'ok',
     framework: 'TradingAgents v0.6.0',
@@ -153,7 +154,8 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/api/config', (req, res) => {
-  const hasKey = !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+  const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  const hasKey = !!(key && key.startsWith('AIza'));
   res.json({
     ...systemConfig,
     hasGeminiKey: hasKey,
