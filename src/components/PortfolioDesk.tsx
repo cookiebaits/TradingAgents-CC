@@ -61,44 +61,55 @@ export const PortfolioDesk: React.FC<PortfolioDeskProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-[#182026] rounded-xl border border-[#263238] p-5">
           <span className="text-xs font-mono text-[#9aa6af] uppercase">
-            Total Net Asset Value
+            Total Portfolio Value
           </span>
           <div className="text-2xl font-bold font-mono text-[#e4e8eb] mt-1">
-            ${portfolio.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ${portfolio.totalValue.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </div>
           <div className="flex items-center gap-1 text-xs text-[#14c290] font-mono mt-1">
             <TrendingUp className="w-3.5 h-3.5" />
-            <span>+${portfolio.dailyPnL.toFixed(2)} (+{portfolio.dailyPnLPercent}%) today</span>
+            <span>
+              +${portfolio.dailyPnL.toFixed(2)} (+{portfolio.dailyPnLPercent}%) today
+            </span>
           </div>
         </div>
 
         <div className="bg-[#182026] rounded-xl border border-[#263238] p-5">
           <span className="text-xs font-mono text-[#9aa6af] uppercase">
-            Available Cash
+            Ready Cash Reserve
           </span>
           <div className="text-2xl font-bold font-mono text-[#14c290] mt-1">
-            ${portfolio.cash.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ${portfolio.cash.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </div>
           <div className="text-xs text-[#9aa6af] font-mono mt-1">
-            {((portfolio.cash / portfolio.totalValue) * 100).toFixed(1)}% cash reserve
+            {((portfolio.cash / portfolio.totalValue) * 100).toFixed(1)}% cash in reserve
           </div>
         </div>
 
         <div className="bg-[#182026] rounded-xl border border-[#263238] p-5">
           <span className="text-xs font-mono text-[#9aa6af] uppercase">
-            Invested Equity
+            Invested in Stocks
           </span>
           <div className="text-2xl font-bold font-mono text-[#e4e8eb] mt-1">
-            ${(portfolio.totalValue - portfolio.cash).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ${(portfolio.totalValue - portfolio.cash).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </div>
           <div className="text-xs text-[#9aa6af] font-mono mt-1">
-            {portfolio.holdings.length} Active Positions
+            {portfolio.holdings.length} Active Stock Positions
           </div>
         </div>
 
         <div className="bg-[#182026] rounded-xl border border-[#263238] p-5 flex flex-col justify-between">
           <span className="text-xs font-mono text-[#9aa6af] uppercase">
-            Order Desk Action
+            Trade Actions
           </span>
           <button
             onClick={() =>
@@ -112,7 +123,7 @@ export const PortfolioDesk: React.FC<PortfolioDeskProps> = ({
             className="w-full mt-2 py-2 bg-[#14c290] hover:bg-[#14c290]/90 text-[#0f1418] text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5"
           >
             <PlusCircle className="w-3.5 h-3.5" />
-            <span>Place Manual Order</span>
+            <span>Make Custom Trade</span>
           </button>
         </div>
       </div>
@@ -123,11 +134,11 @@ export const PortfolioDesk: React.FC<PortfolioDeskProps> = ({
           <div className="flex items-center gap-2">
             <Briefcase className="w-4 h-4 text-[#14c290]" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#e4e8eb]">
-              Current Portfolio Positions
+              Stocks You Currently Own
             </h3>
           </div>
           <span className="text-xs font-mono text-[#9aa6af]">
-            Live Sizing & Point-in-Time Settlement
+            Live Market Value & Sizing
           </span>
         </div>
 
@@ -135,13 +146,13 @@ export const PortfolioDesk: React.FC<PortfolioDeskProps> = ({
           <table className="w-full text-left text-xs font-mono">
             <thead className="bg-[#131a1f] text-[#9aa6af] uppercase border-b border-[#263238]">
               <tr>
-                <th className="p-3.5">Asset</th>
+                <th className="p-3.5">Stock</th>
                 <th className="p-3.5">Shares</th>
-                <th className="p-3.5">Avg Cost</th>
-                <th className="p-3.5">Mark Price</th>
-                <th className="p-3.5">Market Value</th>
-                <th className="p-3.5">Unrealized P&L</th>
-                <th className="p-3.5">Weight</th>
+                <th className="p-3.5">Your Cost</th>
+                <th className="p-3.5">Current Price</th>
+                <th className="p-3.5">Total Value</th>
+                <th className="p-3.5">Profit / Loss</th>
+                <th className="p-3.5">Portfolio Share</th>
                 <th className="p-3.5 text-right">Action</th>
               </tr>
             </thead>
@@ -149,25 +160,40 @@ export const PortfolioDesk: React.FC<PortfolioDeskProps> = ({
               {portfolio.holdings.map((h) => {
                 const isPositive = h.unrealizedPnL >= 0;
                 return (
-                  <tr key={h.ticker} className="hover:bg-[#131a1f]/50 transition-colors">
+                  <tr
+                    key={h.ticker}
+                    className="hover:bg-[#131a1f]/50 transition-colors"
+                  >
                     <td className="p-3.5 font-bold text-[#e4e8eb]">{h.ticker}</td>
                     <td className="p-3.5 text-[#9aa6af]">{h.shares}</td>
                     <td className="p-3.5 text-[#9aa6af]">${h.avgCost.toFixed(2)}</td>
                     <td className="p-3.5 text-[#e4e8eb]">${h.currentPrice.toFixed(2)}</td>
                     <td className="p-3.5 text-[#e4e8eb] font-semibold">
-                      ${h.marketValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ${h.marketValue.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                     </td>
-                    <td className={`p-3.5 font-semibold ${isPositive ? 'text-[#14c290]' : 'text-[#ef6f63]'}`}>
-                      {isPositive ? '+' : ''}${h.unrealizedPnL.toFixed(2)} ({isPositive ? '+' : ''}
+                    <td
+                      className={`p-3.5 font-semibold ${
+                        isPositive ? 'text-[#14c290]' : 'text-[#ef6f63]'
+                      }`}
+                    >
+                      {isPositive ? '+' : ''}${h.unrealizedPnL.toFixed(2)} (
+                      {isPositive ? '+' : ''}
                       {h.unrealizedPnLPercent.toFixed(2)}%)
                     </td>
-                    <td className="p-3.5 text-[#9aa6af]">{h.allocationPercent.toFixed(1)}%</td>
+                    <td className="p-3.5 text-[#9aa6af]">
+                      {h.allocationPercent.toFixed(1)}%
+                    </td>
                     <td className="p-3.5 text-right">
                       <button
-                        onClick={() => handleQuickSell(h.ticker, h.currentPrice, h.shares)}
+                        onClick={() =>
+                          handleQuickSell(h.ticker, h.currentPrice, h.shares)
+                        }
                         className="px-2.5 py-1 text-[11px] rounded bg-[#ef6f63]/15 text-[#ef6f63] hover:bg-[#ef6f63]/25 border border-[#ef6f63]/30 transition-colors"
                       >
-                        Liquidate
+                        Sell Shares
                       </button>
                     </td>
                   </tr>
@@ -176,7 +202,7 @@ export const PortfolioDesk: React.FC<PortfolioDeskProps> = ({
               {portfolio.holdings.length === 0 && (
                 <tr>
                   <td colSpan={8} className="p-8 text-center text-[#9aa6af]">
-                    No active positions held. Execute a recommended trade from the Agent Terminal.
+                    You do not own any stocks yet. Analyze a stock in the AI Committee tab to place an order.
                   </td>
                 </tr>
               )}
@@ -189,19 +215,19 @@ export const PortfolioDesk: React.FC<PortfolioDeskProps> = ({
       <div className="bg-[#182026] rounded-xl border border-[#263238] overflow-hidden">
         <div className="p-4 border-b border-[#263238]">
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#e4e8eb]">
-            Execution Ledger & Audit Log
+            Recent Trades Record
           </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
             <thead className="bg-[#131a1f] text-[#9aa6af] uppercase border-b border-[#263238]">
               <tr>
-                <th className="p-3.5">Timestamp</th>
-                <th className="p-3.5">Type</th>
-                <th className="p-3.5">Asset</th>
-                <th className="p-3.5">Size</th>
-                <th className="p-3.5">Fill Price</th>
-                <th className="p-3.5">Total Value</th>
+                <th className="p-3.5">Time</th>
+                <th className="p-3.5">Action</th>
+                <th className="p-3.5">Stock</th>
+                <th className="p-3.5">Shares</th>
+                <th className="p-3.5">Price Paid</th>
+                <th className="p-3.5">Total Amount</th>
                 <th className="p-3.5">Committee Stance</th>
               </tr>
             </thead>
@@ -209,7 +235,7 @@ export const PortfolioDesk: React.FC<PortfolioDeskProps> = ({
               {portfolio.recentTrades.map((t) => (
                 <tr key={t.id} className="hover:bg-[#131a1f]/50">
                   <td className="p-3.5 text-[#9aa6af]">
-                    {new Date(t.timestamp).toLocaleDateString()} {new Date(t.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(t.timestamp).toLocaleDateString()}
                   </td>
                   <td className="p-3.5">
                     <span
@@ -239,11 +265,14 @@ export const PortfolioDesk: React.FC<PortfolioDeskProps> = ({
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
           <div className="bg-[#182026] border border-[#263238] rounded-xl max-w-sm w-full p-6 shadow-2xl">
             <h3 className="text-sm font-bold text-[#e4e8eb] mb-4">
-              Direct Order Entry
+              Enter Custom Trade
             </h3>
-            <form onSubmit={handleManualTradeSubmit} className="space-y-4 text-xs font-mono">
+            <form
+              onSubmit={handleManualTradeSubmit}
+              className="space-y-4 text-xs font-mono"
+            >
               <div>
-                <label className="block text-[#9aa6af] mb-1">Ticker</label>
+                <label className="block text-[#9aa6af] mb-1">Stock Ticker</label>
                 <input
                   type="text"
                   value={tradeModal.ticker}
@@ -259,7 +288,7 @@ export const PortfolioDesk: React.FC<PortfolioDeskProps> = ({
                 <button
                   type="button"
                   onClick={() => setTradeModal({ ...tradeModal, action: 'BUY' })}
-                  className={`py-2 rounded font-bold ${
+                  className={`py-2 rounded font-bold cursor-pointer ${
                     tradeModal.action === 'BUY'
                       ? 'bg-[#14c290] text-[#0f1418]'
                       : 'bg-[#131a1f] text-[#9aa6af]'
@@ -270,7 +299,7 @@ export const PortfolioDesk: React.FC<PortfolioDeskProps> = ({
                 <button
                   type="button"
                   onClick={() => setTradeModal({ ...tradeModal, action: 'SELL' })}
-                  className={`py-2 rounded font-bold ${
+                  className={`py-2 rounded font-bold cursor-pointer ${
                     tradeModal.action === 'SELL'
                       ? 'bg-[#ef6f63] text-[#0f1418]'
                       : 'bg-[#131a1f] text-[#9aa6af]'
@@ -281,7 +310,7 @@ export const PortfolioDesk: React.FC<PortfolioDeskProps> = ({
               </div>
 
               <div>
-                <label className="block text-[#9aa6af] mb-1">Shares</label>
+                <label className="block text-[#9aa6af] mb-1">Number of Shares</label>
                 <input
                   type="number"
                   min="1"
@@ -298,7 +327,7 @@ export const PortfolioDesk: React.FC<PortfolioDeskProps> = ({
               </div>
 
               <div>
-                <label className="block text-[#9aa6af] mb-1">Limit Price ($)</label>
+                <label className="block text-[#9aa6af] mb-1">Price per Share ($)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -326,7 +355,7 @@ export const PortfolioDesk: React.FC<PortfolioDeskProps> = ({
                   type="submit"
                   className="px-4 py-1.5 rounded bg-[#14c290] text-[#0f1418] font-bold"
                 >
-                  Send Order
+                  Confirm Order
                 </button>
               </div>
             </form>

@@ -1,6 +1,29 @@
 export type PortfolioRating = 'Buy' | 'Overweight' | 'Hold' | 'Underweight' | 'Sell';
 export type TraderAction = 'Buy' | 'Hold' | 'Sell';
 
+export interface MorningstarRating {
+  stars: number; // 1 to 5
+  economicMoat: 'Wide' | 'Narrow' | 'None';
+  moatTrend: 'Stable' | 'Positive' | 'Negative';
+  fairValueEstimate: number;
+  priceToFairValue: number;
+  valuationStance: 'Undervalued' | 'Fairly Valued' | 'Overvalued';
+  uncertainty: 'Low' | 'Medium' | 'High' | 'Very High';
+  capitalAllocation: 'Exemplary' | 'Standard' | 'Poor';
+  analystSummary: string;
+}
+
+export interface OptionGreeks {
+  delta: number;
+  gamma: number;
+  theta: number;
+  vega: number;
+  rho: number;
+  impliedVolatility: number; // e.g. 34.5%
+  strikePrice: number;
+  expirationDays: number;
+}
+
 export interface MarketData {
   symbol: string;
   name: string;
@@ -25,6 +48,8 @@ export interface MarketData {
   debtToEquity: number;
   grossMargin: number;
   revenueGrowthYoY: number;
+  morningstar?: MorningstarRating;
+  greeks?: OptionGreeks;
 }
 
 export interface AnalystReport {

@@ -1,10 +1,13 @@
 import React from 'react';
 import {
+  Award,
+  Compass,
   Download,
   ExternalLink,
   FileText,
   Printer,
   Share2,
+  Star,
 } from 'lucide-react';
 import { FullAnalysisReport } from '../types';
 
@@ -21,7 +24,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ report }) => {
           No Report Selected
         </h3>
         <p className="text-xs">
-          Run an analysis in the Agent Terminal to generate a Tauric Research HTML
+          Run an analysis in the AI Committee tab to generate a Tauric Research
           report.
         </p>
       </div>
@@ -50,8 +53,8 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ report }) => {
       {/* Action Toolbar */}
       <div className="flex items-center justify-between bg-[#182026] p-4 rounded-xl border border-[#263238]">
         <div>
-          <span className="text-xs font-mono text-[#9aa6af]">Report Document:</span>
-          <span className="text-xs font-bold text-[#e4e8eb] ml-2">
+          <span className="text-xs font-mono text-[#9aa6af]">Generated Document:</span>
+          <span className="text-xs font-bold text-[#e4e8eb] ml-2 font-mono">
             complete_report.html ({report.ticker})
           </span>
         </div>
@@ -61,14 +64,14 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ report }) => {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#131a1f] hover:bg-[#1f2933] border border-[#263238] text-xs font-medium text-[#e4e8eb] transition-colors"
           >
             <ExternalLink className="w-3.5 h-3.5 text-[#14c290]" />
-            <span>Open Standalone Page</span>
+            <span>Open Standalone Webpage</span>
           </button>
           <button
             onClick={handleDownloadHtml}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#14c290] hover:bg-[#14c290]/90 text-[#0f1418] text-xs font-bold transition-all shadow-sm"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Download complete_report.html</span>
+            <span>Download HTML Report</span>
           </button>
         </div>
       </div>
@@ -84,7 +87,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ report }) => {
               <span>TRADINGAGENTS FRAMEWORK</span>
             </div>
             <div className="text-xs font-mono text-[#9aa6af]">
-              Generated {report.date}
+              Analysis Date: {report.date}
             </div>
           </div>
 
@@ -99,7 +102,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ report }) => {
               {report.portfolioVerdict.rating.toUpperCase()}
             </span>
             <span className="text-xs text-[#9aa6af] font-mono">
-              Horizon: {report.portfolioVerdict.targetHorizon}
+              Target Horizon: {report.portfolioVerdict.targetHorizon}
             </span>
           </div>
 
@@ -108,11 +111,11 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ report }) => {
           </p>
         </div>
 
-        {/* Telemetry Grid */}
+        {/* Telemetry Summary Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-lg bg-[#182026] border border-[#263238] mb-8 font-sans text-xs">
           <div>
             <span className="block text-[10px] font-mono uppercase text-[#9aa6af]">
-              Current Print
+              Market Price
             </span>
             <span className="font-mono text-base font-bold text-[#e4e8eb]">
               ${report.marketData.price}
@@ -120,7 +123,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ report }) => {
           </div>
           <div>
             <span className="block text-[10px] font-mono uppercase text-[#9aa6af]">
-              Target / Stop
+              Profit Goal / Safety Stop
             </span>
             <span className="font-mono text-base font-bold text-[#14c290]">
               ${report.traderProposal.targetPrice} / ${report.traderProposal.stopLoss}
@@ -128,7 +131,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ report }) => {
           </div>
           <div>
             <span className="block text-[10px] font-mono uppercase text-[#9aa6af]">
-              Approved Capital
+              Approved Sizing
             </span>
             <span className="font-mono text-base font-bold text-[#e4e8eb]">
               {report.portfolioVerdict.approvedAllocationPercent}% ($
@@ -137,7 +140,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ report }) => {
           </div>
           <div>
             <span className="block text-[10px] font-mono uppercase text-[#9aa6af]">
-              Risk / Reward
+              Reward vs Risk
             </span>
             <span className="font-mono text-base font-bold text-[#e4e8eb]">
               {report.traderProposal.riskRewardRatio}:1
@@ -145,10 +148,106 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ report }) => {
           </div>
         </div>
 
-        {/* Section 1 */}
+        {/* Morningstar Independent Rating Section */}
+        {report.marketData.morningstar && (
+          <div className="mb-8 font-sans p-5 rounded-lg bg-[#182026] border border-[#263238]">
+            <div className="flex items-center justify-between mb-3 border-b border-[#263238] pb-2">
+              <div className="flex items-center gap-2">
+                <Award className="w-4 h-4 text-[#e5a93b]" />
+                <h2 className="text-sm font-bold text-[#e4e8eb] uppercase tracking-wide">
+                  Morningstar Trusted Rating
+                </h2>
+              </div>
+              <div className="flex items-center gap-0.5 text-[#e5a93b]">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star
+                    key={s}
+                    className={`w-3.5 h-3.5 ${
+                      s <= report.marketData.morningstar!.stars
+                        ? 'fill-[#e5a93b] text-[#e5a93b]'
+                        : 'text-[#3d4c55]'
+                    }`}
+                  />
+                ))}
+                <span className="ml-1 text-xs font-mono font-bold text-[#e4e8eb]">
+                  {report.marketData.morningstar.stars}/5 Stars
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono mb-3">
+              <div>
+                <span className="text-[#9aa6af] text-[10px] uppercase block">Economic Moat</span>
+                <span className="text-[#14c290] font-bold">{report.marketData.morningstar.economicMoat}</span>
+              </div>
+              <div>
+                <span className="text-[#9aa6af] text-[10px] uppercase block">Fair Value Price</span>
+                <span className="text-[#e4e8eb] font-bold">${report.marketData.morningstar.fairValueEstimate}</span>
+              </div>
+              <div>
+                <span className="text-[#9aa6af] text-[10px] uppercase block">Price to Value</span>
+                <span className="text-[#14c290] font-bold">{report.marketData.morningstar.priceToFairValue}x ({report.marketData.morningstar.valuationStance})</span>
+              </div>
+              <div>
+                <span className="text-[#9aa6af] text-[10px] uppercase block">Stewardship</span>
+                <span className="text-[#e4e8eb] font-bold">{report.marketData.morningstar.capitalAllocation}</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#c5cdd3] leading-relaxed">
+              {report.marketData.morningstar.analystSummary}
+            </p>
+          </div>
+        )}
+
+        {/* Options Greeks & Volatility Section */}
+        {report.marketData.greeks && (
+          <div className="mb-8 font-sans p-5 rounded-lg bg-[#182026] border border-[#263238]">
+            <div className="flex items-center justify-between mb-3 border-b border-[#263238] pb-2">
+              <div className="flex items-center gap-2">
+                <Compass className="w-4 h-4 text-[#14c290]" />
+                <h2 className="text-sm font-bold text-[#e4e8eb] uppercase tracking-wide">
+                  Option Greeks & Volatility Parameters
+                </h2>
+              </div>
+              <span className="text-xs font-mono text-[#9aa6af]">
+                30-Day Benchmark Contract (${report.marketData.greeks.strikePrice} Strike)
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 text-xs font-mono">
+              <div className="bg-[#131a1f] p-2.5 rounded border border-[#263238]">
+                <span className="text-[10px] text-[#9aa6af] block">Delta (Δ)</span>
+                <span className="font-bold text-[#14c290] text-sm">{report.marketData.greeks.delta}</span>
+              </div>
+              <div className="bg-[#131a1f] p-2.5 rounded border border-[#263238]">
+                <span className="text-[10px] text-[#9aa6af] block">Gamma (Γ)</span>
+                <span className="font-bold text-[#e4e8eb] text-sm">{report.marketData.greeks.gamma}</span>
+              </div>
+              <div className="bg-[#131a1f] p-2.5 rounded border border-[#263238]">
+                <span className="text-[10px] text-[#ef6f63] block">Theta (Θ)</span>
+                <span className="font-bold text-[#ef6f63] text-sm">${report.marketData.greeks.theta}</span>
+              </div>
+              <div className="bg-[#131a1f] p-2.5 rounded border border-[#263238]">
+                <span className="text-[10px] text-[#9aa6af] block">Vega (ν)</span>
+                <span className="font-bold text-[#e4e8eb] text-sm">{report.marketData.greeks.vega}</span>
+              </div>
+              <div className="bg-[#131a1f] p-2.5 rounded border border-[#263238]">
+                <span className="text-[10px] text-[#9aa6af] block">Rho (ρ)</span>
+                <span className="font-bold text-[#e4e8eb] text-sm">{report.marketData.greeks.rho}</span>
+              </div>
+              <div className="bg-[#131a1f] p-2.5 rounded border border-[#263238]">
+                <span className="text-[10px] text-[#14c290] block">Volatility</span>
+                <span className="font-bold text-[#14c290] text-sm">{report.marketData.greeks.impliedVolatility}%</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Section 1: Specialist Analysts */}
         <div className="mb-8 font-sans">
           <h2 className="text-lg font-bold text-[#e4e8eb] border-b border-[#263238] pb-2 mb-4">
-            1. Analyst Team Reports
+            1. Specialist Analyst Team Findings
           </h2>
           <div className="space-y-4">
             {report.analysts.map((a, i) => (
@@ -172,10 +271,10 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ report }) => {
           </div>
         </div>
 
-        {/* Section 2 */}
+        {/* Section 2: The Debate */}
         <div className="mb-8 font-sans">
           <h2 className="text-lg font-bold text-[#e4e8eb] border-b border-[#263238] pb-2 mb-4">
-            2. Structured Bull/Bear Debate
+            2. Adversarial Growth vs Risk Debate
           </h2>
           <div className="space-y-3">
             {report.researchDebate.map((d, i) => (
@@ -199,18 +298,29 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({ report }) => {
           </div>
         </div>
 
-        {/* Section 3 & 4 */}
+        {/* Section 3: Trade Execution */}
         <div className="font-sans border-t border-[#263238] pt-6">
           <h2 className="text-lg font-bold text-[#e4e8eb] mb-2">
-            3. Trader Execution & Portfolio Sizing
+            3. Final Order Execution & Sizing
           </h2>
           <p className="text-xs text-[#c5cdd3] mb-4">
             {report.portfolioVerdict.executionNotes}
           </p>
 
-          <div className="text-center pt-8 border-t border-[#263238] text-[11px] text-[#5d6670] font-mono">
-            Tauric Research · Multi-Agents LLM Financial Trading Framework
-            (TradingAgents v0.6.0)
+          <div className="mt-8 pt-6 border-t border-[#263238] space-y-3">
+            <div className="p-4 rounded-lg bg-[#182026] border border-[#263238] text-[11px] leading-relaxed text-[#9aa6af] space-y-1.5 font-sans">
+              <div className="font-bold text-[#e4e8eb] uppercase tracking-wide flex items-center gap-1.5">
+                <span>⚠️</span>
+                <span>Important Risk & AI Educational Disclaimer</span>
+              </div>
+              <p>
+                This report was generated using Artificial Intelligence (AI) and automated multi-agent algorithms for <em>educational and research reference only</em>. No warranty, guarantee, or promise of profit is made. Real-world stock, option, and crypto markets involve risk—<strong>you can lose money</strong>. Prices and fundamentals change rapidly. Always conduct your own research before trading.
+              </p>
+            </div>
+
+            <div className="text-center text-[11px] text-[#5d6670] font-mono">
+              Tauric Research · Multi-Agents LLM Financial Trading Framework (TradingAgents v0.6.0)
+            </div>
           </div>
         </div>
       </div>

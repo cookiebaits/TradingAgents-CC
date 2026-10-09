@@ -7,9 +7,21 @@ import { PortfolioDesk } from './components/PortfolioDesk';
 import { MemoryLogView } from './components/MemoryLogView';
 import { BacktestLab } from './components/BacktestLab';
 import { SettingsModal } from './components/SettingsModal';
-import { FullAnalysisReport, MemoryLogEntry, PortfolioState, SystemConfig } from './types';
+import { LoginScreen } from './components/LoginScreen';
+import { listenToAuth, logoutGoogle } from './firebase';
+import {
+  FullAnalysisReport,
+  MemoryLogEntry,
+  PortfolioState,
+  SystemConfig,
+} from './types';
 
 export const App: React.FC = () => {
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isGuestMode, setIsGuestMode] = useState(false);
+  const [authInitialized, setAuthInitialized] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
   const [activeTab, setActiveTab] = useState<
     'terminal' | 'report' | 'portfolio' | 'memory' | 'backtest'
   >('terminal');
@@ -17,9 +29,22 @@ export const App: React.FC = () => {
   const [portfolio, setPortfolio] = useState<PortfolioState | null>(null);
   const [memoryLogs, setMemoryLogs] = useState<MemoryLogEntry[]>([]);
   const [config, setConfig] = useState<SystemConfig | null>(null);
+  const [hasGeminiKey, setHasGeminiKey] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeStage, setActiveStage] = useState(1);
+
+  // Initialize Firebase Auth listener
+  useEffect(() => {
+    const unsubscribe = listenToAuth((user) => {
+      setCurrentUser(user);
+      setAuthInitialized(true);
+      if (user) {
+        setIsLoginModalOpen(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Initial Data Fetch
   useEffect(() => {
@@ -35,7 +60,10 @@ export const App: React.FC = () => {
 
     fetch('/api/config')
       .then((r) => r.json())
-      .then(setConfig)
+      .then((cfg) => {
+        setConfig(cfg);
+        setHasGeminiKey(!!cfg.hasGeminiKey);
+      })
       .catch(console.error);
 
     // Fetch latest seeded report if available
@@ -135,10 +163,30 @@ export const App: React.FC = () => {
       });
       const data = await res.json();
       setConfig(data);
+      setHasGeminiKey(!!data.hasGeminiKey);
     } catch (err) {
       console.error('Failed to save config:', err);
     }
   };
+
+  const handleLogout = async () => {
+    await logoutGoogle();
+    setCurrentUser(null);
+    setIsGuestMode(false);
+  };
+
+  // If not yet signed in and haven't opted for guest mode, show private login gate
+  if (authInitialized && !currentUser && !isGuestMode) {
+    return (
+      <LoginScreen
+        onLoginSuccess={(user) => {
+          setCurrentUser(user);
+          setIsGuestMode(false);
+        }}
+        onContinueGuest={() => setIsGuestMode(true)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0f1418] text-[#e4e8eb] flex flex-col font-sans">
@@ -147,6 +195,10 @@ export const App: React.FC = () => {
         setActiveTab={setActiveTab}
         openSettings={() => setIsSettingsOpen(true)}
         hasActiveReport={!!report}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        onOpenLogin={() => setIsLoginModalOpen(true)}
+        hasGeminiKey={hasGeminiKey}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -171,10 +223,7 @@ export const App: React.FC = () => {
         {activeTab === 'report' && <ReportViewer report={report} />}
 
         {activeTab === 'portfolio' && portfolio && (
-          <PortfolioDesk
-            portfolio={portfolio}
-            onTrade={handleExecuteTrade}
-          />
+          <PortfolioDesk portfolio={portfolio} onTrade={handleExecuteTrade} />
         )}
 
         {activeTab === 'memory' && (
@@ -184,20 +233,38 @@ export const App: React.FC = () => {
         {activeTab === 'backtest' && <BacktestLab />}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[#263238] bg-[#131a1f] py-4 text-center text-xs font-mono text-[#5d6670]">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div>
-            TradingAgents Framework · Tauric Research · Quantitative LLM Trading System
+      {/* Footer with Risk & AI Disclaimer */}
+      <footer className="border-t border-[#263238] bg-[#131a1f] py-6 text-xs text-[#9aa6af]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+          <div className="p-4 rounded-xl bg-[#182026] border border-[#263238] text-[11px] leading-relaxed text-[#9aa6af] space-y-2">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-[#e4e8eb] uppercase tracking-wider font-mono">
+              <span className="text-[#e5a93b]">⚠️</span>
+              <span>Important Risk & AI Educational Disclaimer</span>
+            </div>
+            <p>
+              <strong>AI-Generated Information for Reference Only:</strong> Artificial intelligence (AI) and automated algorithms were used to pull, analyze, and synthesize the data, sentiments, ratings, and estimates shown on this platform. All outputs are provided strictly for <em>educational and reference purposes only</em>. There is no warranty, guarantee, or promise of profit or financial gain, express or implied.
+            </p>
+            <p>
+              <strong>Risk of Loss & Market Changes:</strong> Stock, option, and cryptocurrency markets are volatile and subject to real-world risks. Prices, company financials, and market conditions change constantly. Trading and investing carry substantial financial risk—<strong>you can lose money</strong>. Past performance and backtests do not guarantee future results. This platform does not provide investment or financial advice. Always perform your own due diligence before risking real capital.
+            </p>
           </div>
-          <div className="flex items-center gap-3">
-            <span>Model Tiers: {config?.deepThinkModel || 'gemini-2.5-pro'}</span>
-            <span>•</span>
-            <span className="text-[#14c290]">Port 3000 Active</span>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-mono text-[#5d6670] pt-2 border-t border-[#263238]/60">
+            <div>
+              TradingAgents Framework · Tauric Research · Educational Multi-Agent System
+            </div>
+            <div className="flex items-center gap-3">
+              <span>
+                {hasGeminiKey ? 'Gemini 2.5 Active' : 'Quantitative Engine'}
+              </span>
+              <span>•</span>
+              <span className="text-[#14c290]">Port 3000 Ready</span>
+            </div>
           </div>
         </div>
       </footer>
 
+      {/* Settings Modal */}
       {config && (
         <SettingsModal
           isOpen={isSettingsOpen}
@@ -205,6 +272,27 @@ export const App: React.FC = () => {
           config={config}
           onSaveConfig={handleSaveConfig}
         />
+      )}
+
+      {/* Login Modal (if guest wants to authenticate) */}
+      {isLoginModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+          <div className="relative max-w-md w-full">
+            <button
+              onClick={() => setIsLoginModalOpen(false)}
+              className="absolute top-4 right-4 z-20 text-[#9aa6af] hover:text-[#e4e8eb]"
+            >
+              ✕
+            </button>
+            <LoginScreen
+              onLoginSuccess={(user) => {
+                setCurrentUser(user);
+                setIsLoginModalOpen(false);
+              }}
+              onContinueGuest={() => setIsLoginModalOpen(false)}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

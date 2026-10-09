@@ -36,6 +36,27 @@ const TICKER_DB: Record<string, Partial<MarketData>> = {
     debtToEquity: 0.22,
     grossMargin: 74.8,
     revenueGrowthYoY: 122.4,
+    morningstar: {
+      stars: 4,
+      economicMoat: 'Wide',
+      moatTrend: 'Positive',
+      fairValueEstimate: 145.0,
+      priceToFairValue: 0.95,
+      valuationStance: 'Undervalued',
+      uncertainty: 'High',
+      capitalAllocation: 'Exemplary',
+      analystSummary: 'NVIDIA commands an industry-leading wide economic moat underpinned by the CUDA software platform, proprietary NVLink interconnects, and high switching costs across enterprise AI data centers.',
+    },
+    greeks: {
+      delta: 0.62,
+      gamma: 0.038,
+      theta: -0.14,
+      vega: 0.22,
+      rho: 0.04,
+      impliedVolatility: 46.5,
+      strikePrice: 140.0,
+      expirationDays: 30,
+    },
   },
   AAPL: {
     symbol: 'AAPL',
@@ -61,6 +82,27 @@ const TICKER_DB: Record<string, Partial<MarketData>> = {
     debtToEquity: 1.45,
     grossMargin: 46.2,
     revenueGrowthYoY: 6.1,
+    morningstar: {
+      stars: 3,
+      economicMoat: 'Wide',
+      moatTrend: 'Stable',
+      fairValueEstimate: 228.0,
+      priceToFairValue: 1.02,
+      valuationStance: 'Fairly Valued',
+      uncertainty: 'Medium',
+      capitalAllocation: 'Exemplary',
+      analystSummary: 'Apple enjoys a wide economic moat rooted in high consumer switching costs, proprietary iOS integration, and robust recurring services revenue.',
+    },
+    greeks: {
+      delta: 0.54,
+      gamma: 0.029,
+      theta: -0.09,
+      vega: 0.18,
+      rho: 0.05,
+      impliedVolatility: 24.2,
+      strikePrice: 235.0,
+      expirationDays: 30,
+    },
   },
   MSFT: {
     symbol: 'MSFT',
@@ -86,6 +128,27 @@ const TICKER_DB: Record<string, Partial<MarketData>> = {
     debtToEquity: 0.41,
     grossMargin: 69.8,
     revenueGrowthYoY: 15.2,
+    morningstar: {
+      stars: 4,
+      economicMoat: 'Wide',
+      moatTrend: 'Positive',
+      fairValueEstimate: 475.0,
+      priceToFairValue: 0.91,
+      valuationStance: 'Undervalued',
+      uncertainty: 'Medium',
+      capitalAllocation: 'Exemplary',
+      analystSummary: 'Microsoft maintains an impenetrable enterprise moat driven by Office 365, Azure cloud computing scale, and deep AI productivity tools.',
+    },
+    greeks: {
+      delta: 0.58,
+      gamma: 0.021,
+      theta: -0.12,
+      vega: 0.24,
+      rho: 0.06,
+      impliedVolatility: 22.8,
+      strikePrice: 435.0,
+      expirationDays: 30,
+    },
   },
   TSLA: {
     symbol: 'TSLA',
@@ -111,6 +174,27 @@ const TICKER_DB: Record<string, Partial<MarketData>> = {
     debtToEquity: 0.15,
     grossMargin: 18.2,
     revenueGrowthYoY: 8.4,
+    morningstar: {
+      stars: 3,
+      economicMoat: 'Narrow',
+      moatTrend: 'Stable',
+      fairValueEstimate: 235.0,
+      priceToFairValue: 1.06,
+      valuationStance: 'Fairly Valued',
+      uncertainty: 'Very High',
+      capitalAllocation: 'Standard',
+      analystSummary: 'Tesla possesses a narrow economic moat stemming from cost advantages in electric vehicle manufacturing, battery tech, and autonomous driving telemetry.',
+    },
+    greeks: {
+      delta: 0.65,
+      gamma: 0.042,
+      theta: -0.28,
+      vega: 0.35,
+      rho: 0.03,
+      impliedVolatility: 58.4,
+      strikePrice: 250.0,
+      expirationDays: 30,
+    },
   },
   'BTC-USD': {
     symbol: 'BTC-USD',
@@ -136,6 +220,27 @@ const TICKER_DB: Record<string, Partial<MarketData>> = {
     debtToEquity: 0,
     grossMargin: 0,
     revenueGrowthYoY: 0,
+    morningstar: {
+      stars: 4,
+      economicMoat: 'Wide',
+      moatTrend: 'Positive',
+      fairValueEstimate: 110000.0,
+      priceToFairValue: 0.86,
+      valuationStance: 'Undervalued',
+      uncertainty: 'High',
+      capitalAllocation: 'Exemplary',
+      analystSummary: 'Digital asset benchmark rating: Bitcoin holds an unassailable first-mover network effect, institutional ETF adoption moat, and decentralized sovereign reserve characteristics.',
+    },
+    greeks: {
+      delta: 0.55,
+      gamma: 0.001,
+      theta: -42.5,
+      vega: 125.0,
+      rho: 1.2,
+      impliedVolatility: 62.5,
+      strikePrice: 95000.0,
+      expirationDays: 30,
+    },
   },
   'ETH-USD': {
     symbol: 'ETH-USD',
@@ -161,6 +266,27 @@ const TICKER_DB: Record<string, Partial<MarketData>> = {
     debtToEquity: 0,
     grossMargin: 0,
     revenueGrowthYoY: 0,
+    morningstar: {
+      stars: 3,
+      economicMoat: 'Wide',
+      moatTrend: 'Stable',
+      fairValueEstimate: 3650.0,
+      priceToFairValue: 0.94,
+      valuationStance: 'Undervalued',
+      uncertainty: 'Very High',
+      capitalAllocation: 'Standard',
+      analystSummary: 'Leading smart-contract settlement layer with wide developer moat, staking yield economics, and decentralized finance liquidity dominance.',
+    },
+    greeks: {
+      delta: 0.51,
+      gamma: 0.008,
+      theta: -2.8,
+      vega: 8.5,
+      rho: 0.15,
+      impliedVolatility: 54.0,
+      strikePrice: 3500.0,
+      expirationDays: 30,
+    },
   },
 };
 
@@ -204,6 +330,27 @@ export function getMarketData(symbol: string): MarketData {
     debtToEquity: parseFloat((0.2 + (hash % 10) * 0.1).toFixed(2)),
     grossMargin: parseFloat((45 + (hash % 35)).toFixed(1)),
     revenueGrowthYoY: parseFloat((12 + (hash % 45)).toFixed(1)),
+    morningstar: {
+      stars: (hash % 3) + 3, // 3, 4, or 5 stars
+      economicMoat: (hash % 2 === 0 ? 'Wide' : 'Narrow') as 'Wide' | 'Narrow',
+      moatTrend: (hash % 3 === 0 ? 'Positive' : 'Stable') as 'Positive' | 'Stable',
+      fairValueEstimate: parseFloat((basePrice * (1 + ((hash % 15) - 5) / 100)).toFixed(2)),
+      priceToFairValue: parseFloat((basePrice / (basePrice * (1 + ((hash % 15) - 5) / 100))).toFixed(2)),
+      valuationStance: basePrice < (basePrice * (1 + ((hash % 15) - 5) / 100)) ? 'Undervalued' : 'Fairly Valued',
+      uncertainty: (hash % 2 === 0 ? 'Medium' : 'High') as 'Medium' | 'High',
+      capitalAllocation: (hash % 2 === 0 ? 'Exemplary' : 'Standard') as 'Exemplary' | 'Standard',
+      analystSummary: `Independent quantitative assessment: ${norm} retains sustainable competitive advantages, consistent operational cash generation, and positive capital allocation discipline.`,
+    },
+    greeks: {
+      delta: parseFloat((0.48 + (hash % 20) * 0.01).toFixed(2)),
+      gamma: parseFloat((0.02 + (hash % 15) * 0.001).toFixed(3)),
+      theta: parseFloat((-0.08 - (hash % 12) * 0.01).toFixed(2)),
+      vega: parseFloat((0.15 + (hash % 15) * 0.01).toFixed(2)),
+      rho: parseFloat((0.03 + (hash % 5) * 0.01).toFixed(2)),
+      impliedVolatility: parseFloat((25 + (hash % 35)).toFixed(1)),
+      strikePrice: parseFloat((Math.round(basePrice / 5) * 5).toFixed(2)),
+      expirationDays: 30,
+    },
   };
 }
 
@@ -556,6 +703,31 @@ export function generateStandaloneHtml(report: FullAnalysisReport): string {
       <div class="meta-item"><strong>Approved Size</strong>${report.portfolioVerdict.approvedAllocationPercent}% ($${report.portfolioVerdict.approvedDollarAmount.toLocaleString()})</div>
       <div class="meta-item"><strong>Risk/Reward</strong>${report.traderProposal.riskRewardRatio}:1</div>
     </div>
+
+    ${report.marketData.morningstar ? `
+    <h2>Morningstar Trusted Independent Rating</h2>
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <h3 style="margin: 0; color: var(--ink);">Rating: ${'★'.repeat(report.marketData.morningstar.stars)}${'☆'.repeat(5 - report.marketData.morningstar.stars)} (${report.marketData.morningstar.stars}/5 Stars)</h3>
+        <span style="font-family: var(--sans); font-size: 0.85rem; color: var(--accent); font-weight: bold;">Moat: ${report.marketData.morningstar.economicMoat}</span>
+      </div>
+      <p style="margin: 0.4rem 0;"><strong>Fair Value Price:</strong> $${report.marketData.morningstar.fairValueEstimate} | <strong>Price/Fair Value:</strong> ${report.marketData.morningstar.priceToFairValue}x (${report.marketData.morningstar.valuationStance})</p>
+      <p style="margin: 0.4rem 0;"><strong>Capital Stewardship:</strong> ${report.marketData.morningstar.capitalAllocation} | <strong>Uncertainty:</strong> ${report.marketData.morningstar.uncertainty}</p>
+      <p style="margin-top: 0.6rem; font-style: italic; color: var(--muted);">${report.marketData.morningstar.analystSummary}</p>
+    </div>` : ''}
+
+    ${report.marketData.greeks ? `
+    <h2>Options Greeks & Volatility Profile (30-Day Contract)</h2>
+    <div class="card">
+      <div class="meta-grid" style="margin: 0.5rem 0;">
+        <div class="meta-item"><strong>Delta (Δ)</strong>${report.marketData.greeks.delta} (Price sensitivity per $1 move)</div>
+        <div class="meta-item"><strong>Gamma (Γ)</strong>${report.marketData.greeks.gamma} (Delta acceleration speed)</div>
+        <div class="meta-item"><strong>Theta (Θ)</strong>$${report.marketData.greeks.theta} (Daily contract decay)</div>
+        <div class="meta-item"><strong>Vega (ν)</strong>${report.marketData.greeks.vega} (Sensitivity to 1% swing in volatility)</div>
+        <div class="meta-item"><strong>Rho (ρ)</strong>${report.marketData.greeks.rho} (Interest rate sensitivity)</div>
+        <div class="meta-item"><strong>Implied Vol (IV)</strong>${report.marketData.greeks.impliedVolatility}% (Expected 30-day price movement)</div>
+      </div>
+    </div>` : ''}
 
     <h2>1. Analyst Team Findings</h2>
     ${report.analysts.map(a => `

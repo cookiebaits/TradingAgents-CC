@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Flame,
   Globe,
+  HelpCircle,
   LineChart,
   MessageSquare,
   Play,
@@ -21,6 +22,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { FullAnalysisReport } from '../types';
+import { GreeksAndRating } from './GreeksAndRating';
 
 interface AnalysisTerminalProps {
   report: FullAnalysisReport | null;
@@ -78,7 +80,7 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
       rating: report.portfolioVerdict.rating,
     });
     setTradeSuccessMsg(
-      `Order executed! ${shares} shares of ${report.ticker} added to portfolio.`
+      `Order executed! ${shares} shares of ${report.ticker} added to your portfolio.`
     );
     setTimeout(() => setTradeSuccessMsg(''), 4500);
   };
@@ -89,12 +91,14 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Search & Configuration Bar */}
+      {/* Search & Stock Selection Bar */}
       <div className="bg-[#182026] rounded-xl border border-[#263238] p-5 shadow-sm">
         <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-4">
           {/* Quick Select Buttons */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs font-mono text-[#9aa6af] mr-1">Presets:</span>
+            <span className="text-xs font-mono text-[#9aa6af] mr-1">
+              Popular Stocks:
+            </span>
             {quickTickers.map((t) => (
               <button
                 key={t}
@@ -123,7 +127,7 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
               type="text"
               value={customInput}
               onChange={(e) => setCustomInput(e.target.value.toUpperCase())}
-              placeholder="Or enter custom ticker (e.g. AMD, GOOGL, AMZN)..."
+              placeholder="Or type any stock or crypto ticker (e.g. AMD, AMZN)..."
               className="w-full pl-9 pr-3 py-1.5 bg-[#131a1f] border border-[#263238] rounded-lg text-xs text-[#e4e8eb] placeholder-[#5d6670] font-mono focus:outline-none focus:border-[#14c290]"
             />
           </div>
@@ -139,7 +143,7 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
             />
           </div>
 
-          {/* Run Button */}
+          {/* Run Analysis Button */}
           <button
             type="submit"
             disabled={isAnalyzing}
@@ -152,12 +156,12 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
             {isAnalyzing ? (
               <>
                 <RotateCcw className="w-3.5 h-3.5 animate-spin" />
-                <span>Running Multi-Agent Graph...</span>
+                <span>Running AI Committee...</span>
               </>
             ) : (
               <>
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Run Multi-Agent Committee</span>
+                <span>Analyze Stock Now</span>
               </>
             )}
           </button>
@@ -167,7 +171,7 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
       {/* Main Analysis Results */}
       {report && (
         <div className="space-y-6">
-          {/* Header Banner & Live Quote */}
+          {/* Header Banner & Live Price Quote */}
           <div className="bg-[#182026] rounded-xl border border-[#263238] p-5 shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-start gap-4">
@@ -207,10 +211,10 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
                       {report.marketData.change24hPercent}%)
                     </span>
                     <span className="text-xs text-[#9aa6af] font-mono">
-                      Vol: {report.marketData.volume}
+                      24h Vol: {report.marketData.volume}
                     </span>
                     <span className="text-xs text-[#9aa6af] font-mono">
-                      Cap: {report.marketData.marketCap}
+                      Company Value: {report.marketData.marketCap}
                     </span>
                   </div>
                 </div>
@@ -220,10 +224,16 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
               <div className="flex items-center gap-3 self-end md:self-center">
                 <div className="text-right">
                   <div className="text-[11px] font-mono text-[#9aa6af] uppercase">
-                    Official Committee Verdict
+                    AI Committee Rating
                   </div>
                   <div className="text-lg font-bold font-mono text-[#14c290]">
-                    {report.portfolioVerdict.rating.toUpperCase()}
+                    {report.portfolioVerdict.rating === 'Buy'
+                      ? 'STRONG BUY'
+                      : report.portfolioVerdict.rating === 'Overweight'
+                      ? 'FAVORABLE BUY'
+                      : report.portfolioVerdict.rating === 'Hold'
+                      ? 'HOLD & WAIT'
+                      : report.portfolioVerdict.rating.toUpperCase()}
                   </div>
                 </div>
 
@@ -232,7 +242,7 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#131a1f] hover:bg-[#1f2933] border border-[#263238] text-xs font-medium text-[#e4e8eb] transition-colors"
                 >
                   <ExternalLink className="w-3.5 h-3.5 text-[#14c290]" />
-                  <span>View HTML Report</span>
+                  <span>Full HTML Report</span>
                 </button>
 
                 <button
@@ -253,13 +263,21 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
             )}
           </div>
 
-          {/* Section 1: Analyst Team Tabs */}
+          {/* Morningstar Independent Rating & Option Greeks Bar */}
+          <GreeksAndRating
+            morningstar={report.marketData.morningstar}
+            greeks={report.marketData.greeks}
+            currentPrice={report.marketData.price}
+            symbol={report.ticker}
+          />
+
+          {/* Section 1: Specialist Analysts Findings */}
           <div className="bg-[#182026] rounded-xl border border-[#263238] overflow-hidden">
             <div className="p-4 border-b border-[#263238] flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Bot className="w-4 h-4 text-[#14c290]" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[#e4e8eb]">
-                  Specialized Analyst Team Findings
+                  Specialist Analysts (Researching Financials, Charts, News & Sentiment)
                 </h3>
               </div>
 
@@ -273,7 +291,7 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
                       : 'text-[#9aa6af] hover:text-[#e4e8eb]'
                   }`}
                 >
-                  Technical
+                  Chart Patterns (Technical)
                 </button>
                 <button
                   onClick={() => setActiveAnalystTab('fundamentals')}
@@ -283,7 +301,7 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
                       : 'text-[#9aa6af] hover:text-[#e4e8eb]'
                   }`}
                 >
-                  Fundamentals
+                  Company Financials
                 </button>
                 <button
                   onClick={() => setActiveAnalystTab('news')}
@@ -293,7 +311,7 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
                       : 'text-[#9aa6af] hover:text-[#e4e8eb]'
                   }`}
                 >
-                  Macro & News
+                  World & Industry News
                 </button>
                 <button
                   onClick={() => setActiveAnalystTab('sentiment')}
@@ -303,7 +321,7 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
                       : 'text-[#9aa6af] hover:text-[#e4e8eb]'
                   }`}
                 >
-                  Sentiment
+                  Social Mood & Retail Sentiment
                 </button>
               </div>
             </div>
@@ -316,15 +334,19 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
                       {currentAnalyst.title}
                     </h4>
                     <span className="text-xs text-[#9aa6af]">
-                      Stance:{' '}
+                      Viewpoint:{' '}
                       <strong className="text-[#14c290]">
-                        {currentAnalyst.stance}
+                        {currentAnalyst.stance === 'Bullish'
+                          ? 'Positive (Expects Price to Rise)'
+                          : currentAnalyst.stance === 'Bearish'
+                          ? 'Cautious (Expects Downward Pressure)'
+                          : 'Neutral (Balanced)'}
                       </strong>
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-mono text-[#9aa6af]">
-                      Conviction Score:
+                      Confidence Score:
                     </span>
                     <span className="px-2 py-0.5 rounded bg-[#14c290]/15 text-[#14c290] border border-[#14c290]/30 font-mono text-xs font-bold">
                       {currentAnalyst.score}/100
@@ -338,7 +360,7 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
 
                 <div>
                   <div className="text-xs font-mono text-[#9aa6af] uppercase mb-2">
-                    Key Quantitative Evidence
+                    Key Facts Discovered
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {currentAnalyst.keyPoints.map((pt, i) => (
@@ -356,13 +378,18 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
             )}
           </div>
 
-          {/* Section 2: Researcher Debate Transcript */}
+          {/* Section 2: Bull vs Bear Debate */}
           <div className="bg-[#182026] rounded-xl border border-[#263238] p-5">
-            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#263238]">
-              <MessageSquare className="w-4 h-4 text-[#14c290]" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#e4e8eb]">
-                Adversarial Research Debate (Bull vs. Bear)
-              </h3>
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#263238]">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-[#14c290]" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#e4e8eb]">
+                  The Debate: Growth Opportunities vs. Downside Risks
+                </h3>
+              </div>
+              <span className="text-xs text-[#9aa6af] font-mono">
+                Two AI agents challenge each other's assumptions
+              </span>
             </div>
 
             <div className="space-y-4">
@@ -394,10 +421,14 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
                       ) : (
                         <Bot className="w-3.5 h-3.5" />
                       )}
-                      {turn.speaker} (Round {turn.round})
+                      {turn.speaker === 'Bull Researcher'
+                        ? 'Bull Researcher (Argues for Upside & Growth)'
+                        : turn.speaker === 'Bear Researcher'
+                        ? 'Bear Researcher (Warns of Risks & Valuation)'
+                        : 'Research Manager (Synthesis)'}
                     </span>
                     <span className="text-xs font-mono text-[#9aa6af]">
-                      Conviction: {turn.conviction}/10
+                      Confidence: {turn.conviction} / 10
                     </span>
                   </div>
 
@@ -421,13 +452,18 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
             </div>
           </div>
 
-          {/* Section 3: Risk Management Deliberation */}
+          {/* Section 3: Safety & Risk Management Deliberation */}
           <div className="bg-[#182026] rounded-xl border border-[#263238] p-5">
-            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#263238]">
-              <Shield className="w-4 h-4 text-[#14c290]" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#e4e8eb]">
-                Risk Management Board Deliberation
-              </h3>
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#263238]">
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-[#14c290]" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#e4e8eb]">
+                  Safety & Capital Protection Board
+                </h3>
+              </div>
+              <span className="text-xs text-[#9aa6af] font-mono">
+                Ensures we protect money and avoid oversized losses
+              </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -439,10 +475,14 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-bold text-[#e4e8eb]">
-                        {r.debator}
+                        {r.debator === 'Conservative Debator'
+                          ? 'Cautious Guardian (Defends Cash)'
+                          : r.debator === 'Aggressive Debator'
+                          ? 'Growth Maximizer (Seeks High Returns)'
+                          : 'Balanced Risk Officer'}
                       </span>
                       <span className="text-[10px] font-mono text-[#14c290] bg-[#14c290]/10 px-2 py-0.5 rounded border border-[#14c290]/20">
-                        {r.approved ? 'Passed' : 'Flagged'}
+                        {r.approved ? 'Approved' : 'Flagged'}
                       </span>
                     </div>
                     <p className="text-xs text-[#9aa6af] mb-3 leading-relaxed">
@@ -451,13 +491,13 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
                   </div>
                   <div className="pt-2 border-t border-[#263238] text-[11px] text-[#9aa6af] space-y-1">
                     <div className="flex justify-between">
-                      <span>Max Drawdown:</span>
+                      <span>Maximum Drop Risk:</span>
                       <span className="text-[#e4e8eb] font-mono">
                         {r.maxDrawdownRisk}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Allocation:</span>
+                      <span>Safe Investment Size:</span>
                       <span className="text-[#14c290] font-mono font-medium">
                         {r.sizingRecommendation}
                       </span>

@@ -143,11 +143,21 @@ function recalculatePortfolio() {
 // -------------------------------------------------------------
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', framework: 'TradingAgents v0.6.0' });
+  const hasKey = !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+  res.json({
+    status: 'ok',
+    framework: 'TradingAgents v0.6.0',
+    geminiKeySet: hasKey,
+    dokployReady: true,
+  });
 });
 
 app.get('/api/config', (req, res) => {
-  res.json(systemConfig);
+  const hasKey = !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+  res.json({
+    ...systemConfig,
+    hasGeminiKey: hasKey,
+  });
 });
 
 app.post('/api/config', (req, res) => {

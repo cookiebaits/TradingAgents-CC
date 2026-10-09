@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   BarChart3,
   CheckCircle,
+  HelpCircle,
   Play,
   RotateCcw,
   TrendingDown,
@@ -43,9 +44,12 @@ export const BacktestLab: React.FC = () => {
     <div className="space-y-6">
       {/* Parameter Control Bar */}
       <div className="bg-[#182026] rounded-xl border border-[#263238] p-5">
-        <form onSubmit={handleRun} className="flex flex-wrap items-center gap-4 text-xs font-mono">
+        <form
+          onSubmit={handleRun}
+          className="flex flex-wrap items-center gap-4 text-xs font-mono"
+        >
           <div>
-            <label className="block text-[#9aa6af] mb-1">Target Asset</label>
+            <label className="block text-[#9aa6af] mb-1">Stock to Test</label>
             <select
               value={ticker}
               onChange={(e) => setTicker(e.target.value)}
@@ -60,20 +64,22 @@ export const BacktestLab: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-[#9aa6af] mb-1">Benchmark</label>
+            <label className="block text-[#9aa6af] mb-1">
+              Compare Against (Benchmark)
+            </label>
             <select
               value={benchmark}
               onChange={(e) => setBenchmark(e.target.value)}
               className="bg-[#131a1f] border border-[#263238] rounded px-3 py-1.5 text-[#e4e8eb]"
             >
-              <option value="SPY">SPY (S&P 500 ETF)</option>
-              <option value="QQQ">QQQ (Nasdaq 100 ETF)</option>
-              <option value="HOLD">Buy & Hold Ticker</option>
+              <option value="SPY">SPY (S&P 500 Market Index)</option>
+              <option value="QQQ">QQQ (Nasdaq 100 Tech Index)</option>
+              <option value="HOLD">Just Holding the Stock</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-[#9aa6af] mb-1">From Date</label>
+            <label className="block text-[#9aa6af] mb-1">Start Date</label>
             <input
               type="date"
               value={startDate}
@@ -83,7 +89,7 @@ export const BacktestLab: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-[#9aa6af] mb-1">To Date</label>
+            <label className="block text-[#9aa6af] mb-1">End Date</label>
             <input
               type="date"
               value={endDate}
@@ -96,17 +102,17 @@ export const BacktestLab: React.FC = () => {
             <button
               type="submit"
               disabled={isRunning}
-              className="px-5 py-2 rounded-lg bg-[#14c290] hover:bg-[#14c290]/90 text-[#0f1418] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm"
+              className="px-5 py-2 rounded-lg bg-[#14c290] hover:bg-[#14c290]/90 text-[#0f1418] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
             >
               {isRunning ? (
                 <>
                   <RotateCcw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Simulating...</span>
+                  <span>Simulating Past Trading...</span>
                 </>
               ) : (
                 <>
                   <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>Execute Backtest</span>
+                  <span>Run Past Strategy Test</span>
                 </>
               )}
             </button>
@@ -116,78 +122,92 @@ export const BacktestLab: React.FC = () => {
 
       {backtestResult && (
         <div className="space-y-6">
-          {/* Key Metric Highlights */}
+          {/* Key Metric Highlights with Plain-English explanations */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-[#182026] rounded-xl border border-[#263238] p-5">
               <span className="text-xs font-mono text-[#9aa6af] uppercase">
-                Strategy Return
+                AI Strategy Total Gain
               </span>
               <div className="text-2xl font-bold font-mono text-[#14c290] mt-1">
                 +{backtestResult.metrics.strategyTotalReturn}%
               </div>
               <div className="text-xs text-[#9aa6af] font-mono mt-1">
-                Benchmark: +{backtestResult.metrics.benchmarkTotalReturn}%
+                Market Index was: +{backtestResult.metrics.benchmarkTotalReturn}%
               </div>
             </div>
 
             <div className="bg-[#182026] rounded-xl border border-[#263238] p-5">
               <span className="text-xs font-mono text-[#9aa6af] uppercase">
-                Generated Alpha
+                Extra Profit (Alpha)
               </span>
               <div className="text-2xl font-bold font-mono text-[#e4e8eb] mt-1">
                 +{backtestResult.metrics.alpha}%
               </div>
               <div className="text-xs text-[#14c290] font-mono mt-1">
-                Multi-agent excess return
+                Gained above regular buy-and-hold
               </div>
             </div>
 
             <div className="bg-[#182026] rounded-xl border border-[#263238] p-5">
               <span className="text-xs font-mono text-[#9aa6af] uppercase">
-                Sharpe Ratio
+                Risk-Adjusted Score (Sharpe)
               </span>
               <div className="text-2xl font-bold font-mono text-[#e4e8eb] mt-1">
                 {backtestResult.metrics.sharpeRatio}
               </div>
               <div className="text-xs text-[#9aa6af] font-mono mt-1">
-                Sortino: {backtestResult.metrics.sortinoRatio}
+                (Above 1.5 indicates top-tier returns for the risk)
               </div>
             </div>
 
             <div className="bg-[#182026] rounded-xl border border-[#263238] p-5">
               <span className="text-xs font-mono text-[#9aa6af] uppercase">
-                Max Drawdown
+                Deepest Dip (Max Drawdown)
               </span>
               <div className="text-2xl font-bold font-mono text-[#ef6f63] mt-1">
                 {backtestResult.metrics.maxDrawdown}%
               </div>
               <div className="text-xs text-[#9aa6af] font-mono mt-1">
-                Win Rate: {backtestResult.metrics.winRate}% ({backtestResult.metrics.totalTrades} Trades)
+                Win Rate: {backtestResult.metrics.winRate}% ({backtestResult.metrics.totalTrades} Total Trades)
               </div>
             </div>
           </div>
 
-          {/* Equity Curve Progression Table / Chart */}
+          {/* Equity Curve Progression Chart */}
           <div className="bg-[#182026] rounded-xl border border-[#263238] p-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#e4e8eb] mb-4">
-              Monthly Cumulative Equity Simulation ($100k Base)
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#e4e8eb] mb-1">
+              Monthly Account Growth Comparison ($100,000 Starting Cash)
             </h3>
+            <p className="text-xs text-[#9aa6af] mb-4">
+              Comparing AI Committee decisions against passive market indexing over time.
+            </p>
 
             <div className="space-y-3">
               {backtestResult.equityCurve.map((point: any, idx: number) => {
-                const stratPct = ((point.strategyValue - 100000) / 100000) * 100;
-                const benchPct = ((point.benchmarkValue - 100000) / 100000) * 100;
+                const stratPct =
+                  ((point.strategyValue - 100000) / 100000) * 100;
+                const benchPct =
+                  ((point.benchmarkValue - 100000) / 100000) * 100;
 
                 return (
-                  <div key={idx} className="bg-[#131a1f] p-3 rounded-lg border border-[#263238]">
+                  <div
+                    key={idx}
+                    className="bg-[#131a1f] p-3 rounded-lg border border-[#263238]"
+                  >
                     <div className="flex justify-between items-center text-xs font-mono mb-2">
-                      <span className="text-[#e4e8eb] font-bold">{point.date}</span>
+                      <span className="text-[#e4e8eb] font-bold">
+                        {point.date}
+                      </span>
                       <div className="flex items-center gap-4">
-                        <span className="text-[#14c290]">
-                          Agents: ${point.strategyValue.toLocaleString()} ({stratPct >= 0 ? '+' : ''}{stratPct.toFixed(1)}%)
+                        <span className="text-[#14c290] font-semibold">
+                          AI Agents: ${point.strategyValue.toLocaleString()} (
+                          {stratPct >= 0 ? '+' : ''}
+                          {stratPct.toFixed(1)}%)
                         </span>
                         <span className="text-[#9aa6af]">
-                          {benchmark}: ${point.benchmarkValue.toLocaleString()} ({benchPct >= 0 ? '+' : ''}{benchPct.toFixed(1)}%)
+                          {benchmark}: ${point.benchmarkValue.toLocaleString()} (
+                          {benchPct >= 0 ? '+' : ''}
+                          {benchPct.toFixed(1)}%)
                         </span>
                       </div>
                     </div>
@@ -198,7 +218,10 @@ export const BacktestLab: React.FC = () => {
                         <div
                           className="bg-[#14c290] h-full rounded-full transition-all"
                           style={{
-                            width: `${Math.min(100, Math.max(10, (point.strategyValue / 140000) * 100))}%`,
+                            width: `${Math.min(
+                              100,
+                              Math.max(10, (point.strategyValue / 140000) * 100)
+                            )}%`,
                           }}
                         />
                       </div>
@@ -206,7 +229,10 @@ export const BacktestLab: React.FC = () => {
                         <div
                           className="bg-[#5d6670] h-full rounded-full transition-all"
                           style={{
-                            width: `${Math.min(100, Math.max(10, (point.benchmarkValue / 140000) * 100))}%`,
+                            width: `${Math.min(
+                              100,
+                              Math.max(10, (point.benchmarkValue / 140000) * 100)
+                            )}%`,
                           }}
                         />
                       </div>
