@@ -32,9 +32,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       }
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(
-        err.message || 'Google sign-in could not be completed. Please try again.'
-      );
+      if (err.code === 'auth/unauthorized-domain' || (err.message && err.message.includes('unauthorized-domain'))) {
+        setErrorMsg(
+          `Firebase Unauthorized Domain Error: Please add your Dokploy domain/IP (${window.location.hostname}) to your Firebase Console under Authentication -> Settings -> Authorized Domains. Alternatively, click 'Continue in Guest Demo Mode' below to proceed without signing in.`
+        );
+      } else {
+        setErrorMsg(
+          err.message || 'Google sign-in could not be completed. Please try again.'
+        );
+      }
     } finally {
       setLoading(false);
     }
