@@ -8,19 +8,29 @@ import { MemoryLogView } from './components/MemoryLogView';
 import { BacktestLab } from './components/BacktestLab';
 import { SettingsModal } from './components/SettingsModal';
 import { LoginScreen } from './components/LoginScreen';
+import { OnboardingWalkthrough } from './components/OnboardingWalkthrough';
 import { listenToAuth, logoutGoogle } from './firebase';
 import {
   FullAnalysisReport,
   MemoryLogEntry,
   PortfolioState,
   SystemConfig,
+  UserPreferences,
+  UserProfile,
 } from './types';
 
+const DEFAULT_WATCHLIST = ['NVDA', 'AAPL', 'MSFT', 'TSLA', 'BTC-USD', 'ETH-USD'];
+
 export const App: React.FC = () => {
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isGuestMode, setIsGuestMode] = useState(false);
   const [authInitialized, setAuthInitialized] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  // Watchlist & Onboarding Customization State
+  const [watchlist, setWatchlist] = useState<string[]>(DEFAULT_WATCHLIST);
+  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
+  const [isWalkthroughOpen, setIsWalkthroughOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState<
     'terminal' | 'report' | 'portfolio' | 'memory' | 'backtest'
@@ -34,13 +44,38 @@ export const App: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeStage, setActiveStage] = useState(1);
 
-  // Initialize Firebase Auth listener
+  // Load preferences for user
+  const loadUserPreferences = (user: UserProfile) => {
+    try {
+      const storageKey = `tauric_prefs_${user.email}`;
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed: UserPreferences = JSON.parse(saved);
+        setPreferences(parsed);
+        if (parsed.watchlist && parsed.watchlist.length > 0) {
+          setWatchlist(parsed.watchlist);
+        }
+        if (!parsed.onboardingCompleted) {
+          setIsWalkthroughOpen(true);
+        }
+      } else {
+        // First-time Google user -> launch walkthrough
+        setIsWalkthroughOpen(true);
+      }
+    } catch (e) {
+      console.warn('Failed to load user preferences:', e);
+      setIsWalkthroughOpen(true);
+    }
+  };
+
+  // Initialize Auth listener
   useEffect(() => {
     const unsubscribe = listenToAuth((user) => {
       setCurrentUser(user);
       setAuthInitialized(true);
       if (user) {
         setIsLoginModalOpen(false);
+        loadUserPreferences(user);
       }
     });
     return () => unsubscribe();
@@ -173,6 +208,75 @@ export const App: React.FC = () => {
     await logoutGoogle();
     setCurrentUser(null);
     setIsGuestMode(false);
+    setPreferences(null);
+    setWatchlist(DEFAULT_WATCHLIST);
+  };
+
+  const handleAddToWatchlist = (ticker: string) => {
+    const clean = ticker.toUpperCase().trim();
+    if (!clean) return;
+    setWatchlist((prev) => {
+      if (prev.includes(clean)) return prev;
+      const updated = [...prev, clean];
+      if (currentUser) {
+        const storageKey = `tauric_prefs_${currentUser.email}`;
+        const currentPrefs = preferences || {
+          investmentGoal: 'High-Growth & Momentum',
+          riskTolerance: 'Balanced',
+          selectedIndustries: ['ai_semis'],
+          watchlist: updated,
+          onboardingCompleted: true,
+        };
+        const updatedPrefs = { ...currentPrefs, watchlist: updated };
+        setPreferences(updatedPrefs);
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(updatedPrefs));
+        } catch {}
+      }
+      return updated;
+    });
+  };
+
+  const handleRemoveFromWatchlist = (ticker: string) => {
+    setWatchlist((prev) => {
+      const updated = prev.filter((t) => t !== ticker);
+      if (currentUser) {
+        const storageKey = `tauric_prefs_${currentUser.email}`;
+        if (preferences) {
+          const updatedPrefs = { ...preferences, watchlist: updated };
+          setPreferences(updatedPrefs);
+          try {
+            localStorage.setItem(storageKey, JSON.stringify(updatedPrefs));
+          } catch {}
+        }
+      }
+      return updated;
+    });
+  };
+
+  const handleWalkthroughComplete = (newPrefs: UserPreferences) => {
+    setPreferences(newPrefs);
+    setWatchlist(newPrefs.watchlist);
+    setIsWalkthroughOpen(false);
+
+    if (currentUser) {
+      try {
+        localStorage.setItem(
+          `tauric_prefs_${currentUser.email}`,
+          JSON.stringify(newPrefs)
+        );
+      } catch (e) {
+        console.warn('Failed to save preferences to localStorage:', e);
+      }
+    }
+
+    // Automatically analyze the first stock from their newly customized watchlist
+    if (newPrefs.watchlist.length > 0) {
+      handleRunAnalysis(
+        newPrefs.watchlist[0],
+        new Date().toISOString().split('T')[0]
+      );
+    }
   };
 
   // If not yet signed in and haven't opted for guest mode, show private login gate
@@ -182,6 +286,7 @@ export const App: React.FC = () => {
         onLoginSuccess={(user) => {
           setCurrentUser(user);
           setIsGuestMode(false);
+          loadUserPreferences(user);
         }}
         onContinueGuest={() => setIsGuestMode(true)}
       />
@@ -199,6 +304,7 @@ export const App: React.FC = () => {
         onLogout={handleLogout}
         onOpenLogin={() => setIsLoginModalOpen(true)}
         hasGeminiKey={hasGeminiKey}
+        onOpenWalkthrough={() => setIsWalkthroughOpen(true)}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -216,6 +322,10 @@ export const App: React.FC = () => {
               onRunAnalysis={handleRunAnalysis}
               onExecuteTrade={handleExecuteTrade}
               onViewReport={() => setActiveTab('report')}
+              watchlist={watchlist}
+              onAddToWatchlist={handleAddToWatchlist}
+              onRemoveFromWatchlist={handleRemoveFromWatchlist}
+              onOpenCustomizeWalkthrough={() => setIsWalkthroughOpen(true)}
             />
           </div>
         )}
@@ -255,17 +365,30 @@ export const App: React.FC = () => {
             </div>
             <div className="flex items-center gap-3">
               <span>
-                {hasGeminiKey ? 'Gemini 2.5 Active' : 'Quantitative Engine'}
+                {hasGeminiKey ? 'Gemini 3.8 Active' : 'Quantitative Engine'}
               </span>
               <span>•</span>
-              <span className="text-[#14c290]">Port 3000 Ready</span>
+              <span>
+                {currentUser ? `User: ${currentUser.email}` : 'Guest Mode'}
+              </span>
             </div>
           </div>
         </div>
       </footer>
 
+      {/* Onboarding Customization Walkthrough Modal */}
+      {isWalkthroughOpen && currentUser && (
+        <OnboardingWalkthrough
+          currentUser={currentUser}
+          isOpen={isWalkthroughOpen}
+          onClose={() => setIsWalkthroughOpen(false)}
+          onComplete={handleWalkthroughComplete}
+          initialPreferences={preferences}
+        />
+      )}
+
       {/* Settings Modal */}
-      {config && (
+      {isSettingsOpen && config && (
         <SettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
@@ -274,22 +397,20 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* Login Modal (if guest wants to authenticate) */}
+      {/* Header Google Login Modal */}
       {isLoginModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="relative max-w-md w-full">
-            <button
-              onClick={() => setIsLoginModalOpen(false)}
-              className="absolute top-4 right-4 z-20 text-[#9aa6af] hover:text-[#e4e8eb]"
-            >
-              ✕
-            </button>
             <LoginScreen
               onLoginSuccess={(user) => {
                 setCurrentUser(user);
                 setIsLoginModalOpen(false);
+                loadUserPreferences(user);
               }}
-              onContinueGuest={() => setIsLoginModalOpen(false)}
+              onContinueGuest={() => {
+                setIsLoginModalOpen(false);
+                setIsGuestMode(true);
+              }}
             />
           </div>
         </div>

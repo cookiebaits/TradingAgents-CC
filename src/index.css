@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+html {
+  font-size: 18px; /* Globally increased by 2px (browser default 16px -> 18px) */
+}
+
 @layer base {
   :root {
     --brand-primary: #14c290;
@@ -9,6 +13,16 @@
     --brand-up: #14c290;
     --brand-down: #ef6f63;
     --brand-level: #9aa6af;
+    font-size: 18px;
+  }
+
+  html {
+    font-size: 18px;
+  }
+
+  body {
+    font-size: 18px;
+    line-height: 1.5;
   }
 }
 

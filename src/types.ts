@@ -181,3 +181,20 @@ export interface SystemConfig {
   outputLanguage: string;
   checkpointEnabled: boolean;
 }
+
+export interface UserPreferences {
+  investmentGoal: string;
+  riskTolerance: 'Conservative' | 'Balanced' | 'Aggressive';
+  selectedIndustries: string[];
+  watchlist: string[];
+  onboardingCompleted: boolean;
+}
+
+export interface UserProfile {
+  uid: string;
+  email: string;
+  displayName: string;
+  photoURL?: string | null;
+  preferences?: UserPreferences;
+}
+

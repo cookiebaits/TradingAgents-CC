@@ -18,6 +18,10 @@ import {
   Send,
   Shield,
   Sparkles,
+  Star,
+  SlidersHorizontal,
+  Plus,
+  X,
   TrendingDown,
   TrendingUp,
 } from 'lucide-react';
@@ -36,6 +40,10 @@ interface AnalysisTerminalProps {
     rating: string;
   }) => void;
   onViewReport: () => void;
+  watchlist?: string[];
+  onAddToWatchlist?: (ticker: string) => void;
+  onRemoveFromWatchlist?: (ticker: string) => void;
+  onOpenCustomizeWalkthrough?: () => void;
 }
 
 export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
@@ -44,9 +52,15 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
   onRunAnalysis,
   onExecuteTrade,
   onViewReport,
+  watchlist = ['NVDA', 'AAPL', 'MSFT', 'TSLA', 'BTC-USD', 'ETH-USD'],
+  onAddToWatchlist,
+  onRemoveFromWatchlist,
+  onOpenCustomizeWalkthrough,
 }) => {
   const [selectedTicker, setSelectedTicker] = useState('NVDA');
   const [customInput, setCustomInput] = useState('');
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [quickAddInput, setQuickAddInput] = useState('');
   const [analysisDate, setAnalysisDate] = useState(
     new Date().toISOString().split('T')[0]
   );
@@ -55,7 +69,14 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
   >('market');
   const [tradeSuccessMsg, setTradeSuccessMsg] = useState('');
 
-  const quickTickers = ['NVDA', 'AAPL', 'MSFT', 'TSLA', 'BTC-USD', 'ETH-USD'];
+  const handleQuickAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = quickAddInput.toUpperCase().trim();
+    if (!clean) return;
+    if (onAddToWatchlist) onAddToWatchlist(clean);
+    setQuickAddInput('');
+    setShowQuickAdd(false);
+  };
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -94,28 +115,102 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
       {/* Search & Stock Selection Bar */}
       <div className="bg-[#182026] rounded-xl border border-[#263238] p-5 shadow-sm">
         <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-4">
-          {/* Quick Select Buttons */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs font-mono text-[#9aa6af] mr-1">
-              Popular Stocks:
-            </span>
-            {quickTickers.map((t) => (
-              <button
+          {/* Personalized Watchlist Bar */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#14c290]">
+              <Star className="w-3.5 h-3.5 fill-[#14c290]" />
+              <span>Watchlist:</span>
+            </div>
+
+            {watchlist.map((t) => (
+              <div
                 key={t}
-                type="button"
-                onClick={() => {
-                  setSelectedTicker(t);
-                  setCustomInput('');
-                }}
-                className={`px-2.5 py-1 text-xs font-mono rounded-md border transition-colors ${
-                  selectedTicker === t && !customInput
-                    ? 'bg-[#14c290]/15 text-[#14c290] border-[#14c290]/40 font-bold'
-                    : 'bg-[#131a1f] text-[#9aa6af] border-[#263238] hover:text-[#e4e8eb]'
-                }`}
+                className="group relative inline-flex items-center"
               >
-                {t}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedTicker(t);
+                    setCustomInput('');
+                    onRunAnalysis(t, analysisDate);
+                  }}
+                  className={`pl-2.5 pr-2 py-1 text-xs font-mono rounded-md border transition-all cursor-pointer flex items-center gap-1 ${
+                    selectedTicker === t && !customInput
+                      ? 'bg-[#14c290]/20 text-[#14c290] border-[#14c290]/50 font-bold shadow-sm'
+                      : 'bg-[#131a1f] text-[#9aa6af] border-[#263238] hover:text-[#e4e8eb] hover:border-[#37474f]'
+                  }`}
+                >
+                  <span>{t}</span>
+                  {onRemoveFromWatchlist && (
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveFromWatchlist(t);
+                      }}
+                      title={`Remove ${t} from watchlist`}
+                      className="opacity-0 group-hover:opacity-100 hover:text-[#ef6f63] p-0.5 rounded transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </span>
+                  )}
+                </button>
+              </div>
             ))}
+
+            {/* Quick Add Ticker Inline */}
+            {!showQuickAdd ? (
+              <button
+                type="button"
+                onClick={() => setShowQuickAdd(true)}
+                title="Add stock to watchlist"
+                className="px-2 py-1 text-xs font-mono rounded-md bg-[#131a1f] border border-dashed border-[#263238] hover:border-[#14c290] text-[#9aa6af] hover:text-[#14c290] flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <Plus className="w-3 h-3" />
+                <span className="text-[11px]">Add</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-1 bg-[#131a1f] border border-[#14c290] rounded-md p-0.5">
+                <input
+                  type="text"
+                  autoFocus
+                  value={quickAddInput}
+                  onChange={(e) => setQuickAddInput(e.target.value.toUpperCase())}
+                  placeholder="SYMBOL"
+                  className="w-16 px-1.5 py-0.5 text-xs font-mono text-[#e4e8eb] bg-transparent focus:outline-none"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleQuickAdd(e);
+                    if (e.key === 'Escape') setShowQuickAdd(false);
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleQuickAdd}
+                  className="px-1.5 py-0.5 text-[10px] font-mono bg-[#14c290] text-[#0f1418] font-bold rounded cursor-pointer"
+                >
+                  ✓
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowQuickAdd(false)}
+                  className="p-0.5 text-[#9aa6af] hover:text-[#e4e8eb] cursor-pointer"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+
+            {/* Customize Watchlist / Interests Walkthrough Trigger */}
+            {onOpenCustomizeWalkthrough && (
+              <button
+                type="button"
+                onClick={onOpenCustomizeWalkthrough}
+                title="Customize industries and watchlist"
+                className="px-2 py-1 text-[11px] font-mono rounded-md bg-[#182026] hover:bg-[#1f2933] border border-[#263238] hover:border-[#14c290]/40 text-[#9aa6af] hover:text-[#14c290] flex items-center gap-1 transition-colors cursor-pointer ml-1"
+              >
+                <SlidersHorizontal className="w-3 h-3" />
+                <span>Customize</span>
+              </button>
+            )}
           </div>
 
           <div className="h-6 w-px bg-[#263238] hidden sm:block" />
@@ -189,6 +284,33 @@ export const AnalysisTerminal: React.FC<AnalysisTerminalProps> = ({
                     <span className="text-xs text-[#9aa6af] font-mono">
                       {report.date}
                     </span>
+                    {onAddToWatchlist && onRemoveFromWatchlist && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (watchlist.includes(report.ticker)) {
+                            onRemoveFromWatchlist(report.ticker);
+                          } else {
+                            onAddToWatchlist(report.ticker);
+                          }
+                        }}
+                        title={watchlist.includes(report.ticker) ? 'Remove from watchlist' : 'Add to watchlist'}
+                        className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono font-medium border transition-colors cursor-pointer ${
+                          watchlist.includes(report.ticker)
+                            ? 'bg-[#14c290]/15 border-[#14c290]/40 text-[#14c290]'
+                            : 'bg-[#131a1f] border-[#263238] text-[#9aa6af] hover:text-[#e4e8eb]'
+                        }`}
+                      >
+                        <Star
+                          className={`w-3 h-3 ${
+                            watchlist.includes(report.ticker) ? 'fill-[#14c290]' : ''
+                          }`}
+                        />
+                        <span>
+                          {watchlist.includes(report.ticker) ? 'In Watchlist' : 'Add to Watchlist'}
+                        </span>
+                      </button>
+                    )}
                   </div>
                   <div className="flex items-center gap-4 mt-2">
                     <span className="text-2xl font-bold font-mono text-[#e4e8eb]">

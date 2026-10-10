@@ -22,6 +22,7 @@ interface HeaderProps {
   onLogout: () => void;
   onOpenLogin: () => void;
   hasGeminiKey: boolean;
+  onOpenWalkthrough?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -33,6 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
   onOpenLogin,
   hasGeminiKey,
+  onOpenWalkthrough,
 }) => {
   return (
     <header className="border-b border-[#263238] bg-[#131a1f]/95 backdrop-blur sticky top-0 z-40">
@@ -142,39 +144,69 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </button>
 
-          {/* User Account / Google Login Profile */}
+          {/* Customize Desk / Watchlist Button */}
+          {currentUser && onOpenWalkthrough && (
+            <button
+              onClick={onOpenWalkthrough}
+              title="Customize Interests & Starter Watchlist"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono border border-[#14c290]/30 bg-[#14c290]/10 text-[#14c290] hover:bg-[#14c290]/20 transition-all cursor-pointer"
+            >
+              <Sparkles className="w-3 h-3" />
+              <span>Customize Desk</span>
+            </button>
+          )}
+
+          {/* User Account / Google Login Profile & Sign Out Button */}
           {currentUser ? (
-            <div className="flex items-center gap-2 bg-[#182026] pl-2 pr-1 py-1 rounded-full border border-[#263238]">
-              {currentUser.photoURL ? (
-                <img
-                  src={currentUser.photoURL}
-                  alt={currentUser.displayName || 'User'}
-                  className="w-6 h-6 rounded-full border border-[#14c290]/50"
-                />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-[#14c290]/20 text-[#14c290] flex items-center justify-center text-[10px] font-bold font-mono">
-                  {currentUser.displayName ? currentUser.displayName[0] : 'U'}
-                </div>
-              )}
-              <span className="text-xs text-[#e4e8eb] font-medium max-w-[120px] truncate hidden sm:inline">
-                {currentUser.displayName || currentUser.email}
-              </span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 bg-[#182026] pl-2 pr-2.5 py-1 rounded-full border border-[#263238]">
+                {currentUser.photoURL ? (
+                  <img
+                    src={currentUser.photoURL}
+                    alt={currentUser.displayName || 'User'}
+                    className="w-6 h-6 rounded-full border border-[#14c290]/50"
+                  />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-[#14c290]/20 text-[#14c290] flex items-center justify-center text-[10px] font-bold font-mono">
+                    {currentUser.displayName ? currentUser.displayName[0].toUpperCase() : 'G'}
+                  </div>
+                )}
+                <span className="text-xs text-[#e4e8eb] font-medium max-w-[130px] truncate hidden sm:inline">
+                  {currentUser.displayName || currentUser.email}
+                </span>
+              </div>
+
+              {/* Dedicated Prominent Sign Out Button */}
               <button
+                type="button"
                 onClick={onLogout}
-                title="Sign out of Google"
-                className="p-1 rounded-full text-[#9aa6af] hover:text-[#ef6f63] hover:bg-[#131a1f] transition-colors"
+                title="Sign out of your Google account"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#ef6f63]/30 bg-[#ef6f63]/10 text-[#ef6f63] hover:bg-[#ef6f63]/20 hover:border-[#ef6f63]/60 transition-all text-xs font-mono font-semibold cursor-pointer shadow-sm"
               >
                 <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
               </button>
             </div>
           ) : (
-            <button
-              onClick={onOpenLogin}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#14c290] hover:bg-[#14c290]/90 text-[#0f1418] transition-all shadow-sm"
-            >
-              <User className="w-3.5 h-3.5" />
-              <span>Google Sign-In</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onOpenLogin}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#14c290] hover:bg-[#14c290]/90 text-[#0f1418] transition-all shadow-sm cursor-pointer"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Sign in with Google</span>
+              </button>
+              <button
+                type="button"
+                onClick={onLogout}
+                title="Exit to login screen"
+                className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-mono text-[#9aa6af] hover:text-[#ef6f63] hover:bg-[#182026] rounded-lg border border-[#263238] transition-colors cursor-pointer"
+              >
+                <LogOut className="w-3 h-3" />
+                <span className="hidden sm:inline">Exit</span>
+              </button>
+            </div>
           )}
 
           {/* Settings Button */}
