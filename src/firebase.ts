@@ -10,13 +10,26 @@ import {
 } from 'firebase/auth';
 import firebaseConfig from '../firebase-applet-config.json';
 import { UserProfile } from './types';
+import { decryptVaultConfig } from './utils/vault';
 
 let authInstance: Auth | null = null;
 let providerInstance: GoogleAuthProvider | null = null;
 
+const decryptedJsonConfig = decryptVaultConfig(firebaseConfig as Record<string, string>);
+
+const effectiveConfig = {
+  projectId: (import.meta as any).env?.VITE_FIREBASE_PROJECT_ID || decryptedJsonConfig.projectId,
+  appId: (import.meta as any).env?.VITE_FIREBASE_APP_ID || decryptedJsonConfig.appId,
+  apiKey: (import.meta as any).env?.VITE_FIREBASE_API_KEY || decryptedJsonConfig.apiKey,
+  authDomain: (import.meta as any).env?.VITE_FIREBASE_AUTH_DOMAIN || decryptedJsonConfig.authDomain,
+  storageBucket: (import.meta as any).env?.VITE_FIREBASE_STORAGE_BUCKET || decryptedJsonConfig.storageBucket,
+  messagingSenderId: (import.meta as any).env?.VITE_FIREBASE_MESSAGING_SENDER_ID || decryptedJsonConfig.messagingSenderId,
+  oAuthClientId: (import.meta as any).env?.VITE_GOOGLE_OAUTH_CLIENT_ID || decryptedJsonConfig.oAuthClientId,
+};
+
 // Ensure Firebase is initialized if valid or fallback
 try {
-  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+  const app = getApps().length === 0 ? initializeApp(effectiveConfig) : getApp();
   authInstance = getAuth(app);
   providerInstance = new GoogleAuthProvider();
   providerInstance.addScope('https://www.googleapis.com/auth/userinfo.email');
@@ -94,67 +107,8 @@ export const signInWithGoogle = async (): Promise<{
     }
   }
 
-  // 2. Try Google Identity Services (GIS) Token Popup Window
-  if (typeof window !== 'undefined' && (window as any).google?.accounts?.oauth2) {
-    try {
-      const tokenPromise = new Promise<{ success: boolean; user?: UserProfile; error?: string }>((resolve) => {
-        try {
-          const client = (window as any).google.accounts.oauth2.initTokenClient({
-            client_id:
-              firebaseConfig.oAuthClientId ||
-              '985768273264-dnrdqejf59pqf61oqk0uq9kh613l0e2n.apps.googleusercontent.com',
-            scope: 'openid email profile',
-            prompt: 'select_account',
-            callback: async (tokenResponse: any) => {
-              if (tokenResponse?.error) {
-                resolve({ success: false, error: tokenResponse.error });
-                return;
-              }
-              try {
-                activeToken = tokenResponse.access_token;
-                const infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                  headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-                });
-                if (infoRes.ok) {
-                  const googleInfo = await infoRes.json();
-                  const userProfile = completeGoogleSignIn({
-                    uid: googleInfo.sub || googleInfo.email,
-                    email: googleInfo.email,
-                    displayName: googleInfo.name || googleInfo.email.split('@')[0],
-                    photoURL: googleInfo.picture || null,
-                  });
-                  resolve({ success: true, user: userProfile });
-                  return;
-                }
-              } catch (fetchErr) {
-                console.warn('Failed to fetch userinfo:', fetchErr);
-              }
-              resolve({ success: false });
-            },
-          });
-          client.requestAccessToken({ prompt: 'select_account' });
-        } catch (initErr: any) {
-          resolve({ success: false, error: initErr?.message });
-        }
-      });
-
-      // Allow 3.5s for GIS popup
-      const result = await Promise.race([
-        tokenPromise,
-        new Promise<{ success: boolean; needsAccountChooser: boolean }>((r) =>
-          setTimeout(() => r({ success: false, needsAccountChooser: true }), 3500)
-        ),
-      ]);
-
-      if (result.success && result.user) {
-        return { success: true, user: result.user };
-      }
-    } catch (gisErr) {
-      console.warn('GIS OAuth note:', gisErr);
-    }
-  }
-
-  // 3. If popup is restricted in preview sandbox, present account chooser fallback
+  // If OAuth popup is blocked by origin policies in Cloud Run preview sandbox,
+  // return needsAccountChooser so the user is directly presented with the 1-click Google Sign-In confirmation!
   return {
     success: false,
     needsAccountChooser: true,

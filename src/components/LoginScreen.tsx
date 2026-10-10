@@ -93,21 +93,28 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-[#14c290]/8 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#14c290]/5 rounded-full blur-[160px] pointer-events-none" />
 
-      {/* 1. TOP LIVE MARKET TICKER TAPE BAR */}
-      <div className="border-b border-[#263238] bg-[#131a1f]/95 backdrop-blur py-2 px-4 text-xs font-mono overflow-x-auto no-scrollbar relative z-20">
-        <div className="max-w-7xl mx-auto flex items-center gap-6 shrink-0 min-w-max">
-          <div className="flex items-center gap-1.5 text-[#14c290] font-bold uppercase tracking-wider shrink-0">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#14c290] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#14c290]"></span>
-            </span>
-            <span>Live Markets:</span>
-          </div>
+      {/* 1. TOP LIVE MARKET MOVING TICKER MARQUEE */}
+      <div className="border-b border-[#263238] bg-[#131a1f]/95 backdrop-blur py-2.5 relative z-20 overflow-hidden flex items-center shadow-md">
+        {/* Pinned Left Badge */}
+        <div className="px-4 py-1 bg-[#131a1f] border-r border-[#263238] z-30 flex items-center gap-2 text-[#14c290] font-bold uppercase tracking-wider shrink-0 text-xs font-mono shadow-md">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#14c290] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#14c290]"></span>
+          </span>
+          <span>Live Markets:</span>
+        </div>
 
-          <div className="flex items-center gap-6">
-            {TICKER_TAPE.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-2">
-                <span className="text-[#9aa6af] font-medium">{item.symbol}</span>
+        {/* Continuous Moving Marquee Container */}
+        <div className="flex-1 overflow-hidden relative">
+          {/* Subtle Left & Right Edge Fades */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#131a1f] to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#131a1f] to-transparent z-10 pointer-events-none" />
+
+          {/* Marquee Track */}
+          <div className="animate-marquee flex items-center gap-8 pl-4">
+            {[...TICKER_TAPE, ...TICKER_TAPE, ...TICKER_TAPE].map((item, idx) => (
+              <div key={idx} className="flex items-center gap-2 shrink-0 font-mono text-xs">
+                <span className="text-[#9aa6af] font-semibold">{item.symbol}</span>
                 <span className="font-bold text-[#e4e8eb]">{item.value}</span>
                 <span
                   className={`flex items-center gap-0.5 font-bold ${
@@ -117,6 +124,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   {item.up ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
                   <span>{item.pct}</span>
                 </span>
+                <span className="text-[#263238] ml-3">•</span>
               </div>
             ))}
           </div>
